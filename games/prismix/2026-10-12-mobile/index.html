@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Prismix</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0b10; }
+      #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+      /* 16:9, as large as the window allows - the game's UI is laid out for 1920x1080. */
+      #unity-canvas {
+        width: min(100vw, calc(100vh * 16 / 9)); height: min(100vh, calc(100vw * 9 / 16));
+        display: block; background: #231F20; outline: none;
+        touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+      }
+      /* Phones/tablets (html.touch, set below): the game lays itself out for any landscape aspect
+         (MobileMode), so fill the whole screen instead of letterboxing to 16:9. dvh = height
+         without the browser's collapsing address bar. */
+      html.touch #unity-canvas { width: 100vw; height: 100vh; height: 100dvh; }
+      #rotate {
+        position: fixed; inset: 0; display: none; z-index: 10; flex-direction: column; gap: 16px;
+        align-items: center; justify-content: center; background: #0b0b10; color: #c9c9d6;
+        font: 600 16px/1.5 system-ui, sans-serif; text-align: center;
+      }
+      #rotate .icon { width: 56px; height: 92px; border: 4px solid #c9c9d6; border-radius: 10px; animation: turn 1.6s ease-in-out infinite; }
+      @keyframes turn { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+      @media (orientation: portrait) { html.touch #rotate { display: flex; } }
+      #loading {
+        position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(60vw, 360px);
+        font: 600 14px/1.4 system-ui, sans-serif; color: #c9c9d6; text-align: center;
+      }
+      #bar { height: 6px; margin-top: 10px; border-radius: 3px; background: #24242e; overflow: hidden; }
+      #fill { height: 100%; width: 0; background: linear-gradient(90deg, #ff4d6d, #4dff88, #4d8dff); }
+      #fps {
+        position: fixed; top: 6px; left: 6px; padding: 2px 6px; border-radius: 4px; display: none;
+        font: 600 12px/1.4 ui-monospace, monospace; color: #fff; background: rgba(0, 0, 0, .6);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"><canvas id="unity-canvas" tabindex="-1"></canvas></div>
+    <div id="loading">불러오는 중… <span id="pct">0%</span><div id="bar"><div id="fill"></div></div></div>
+    <div id="fps"></div>
+    <div id="rotate"><div class="icon"></div><div>가로로 돌려 주세요<br><span style="opacity:.6">Rotate to landscape</span></div></div>
+    <script src="Build/a9c999294266f3c3d622279e1200def6.loader.js"></script>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var loading = document.querySelector("#loading");
+
+      // Touch layout (MobileMode in C#): any device whose primary pointer is a finger - which
+      // includes iPads, whose user agent claims to be a Mac - or ?mobile to try it on a desktop.
+      var touch = matchMedia("(pointer: coarse)").matches || new URLSearchParams(location.search).has("mobile");
+      var renderDpr = touch ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+      if (touch) {
+        document.documentElement.classList.add("touch");
+        // First tap: go fullscreen and pin landscape where the browser allows it (Android Chrome;
+        // iPhone Safari has neither, the rotate prompt covers it there).
+        window.addEventListener("pointerdown", function () {
+          var el = document.documentElement;
+          var req = el.requestFullscreen || el.webkitRequestFullscreen;
+          if (!req || document.fullscreenElement) return;
+          Promise.resolve(req.call(el)).then(function () {
+            if (screen.orientation && screen.orientation.lock) return screen.orientation.lock("landscape");
+          }).catch(function () {});
+        }, { once: true });
+      }
+
+      createUnityInstance(canvas, {
+        // -dpr: the C# side sizes the phone UI from CSS pixels (UiScaleApplier.MobileAutoScale).
+        arguments: touch ? ["-mobile", "-dpr=" + renderDpr] : [],
+        dataUrl: "Build/53d94274d1ec1b1f101b61c9eb0c07d6.data.unityweb",
+        frameworkUrl: "Build/e7d70adc40a9d1b00912116fd8153e87.framework.js.unityweb",
+        codeUrl: "Build/be75321c56cdead766bb2d9ebe1549d1.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "QuestionMark",
+        productName: "Prismix",
+        productVersion: "0.1.1",
+        // Chromebook screens are often high-DPI on weak GPUs: render at CSS pixels, not device pixels.
+        // Phones are ~390 CSS px tall, which would blur all text - render those at up to 2x.
+        devicePixelRatio: renderDpr,
+      }, function (progress) {
+        var p = Math.round(progress * 100) + "%";
+        document.querySelector("#pct").textContent = p;
+        document.querySelector("#fill").style.width = p;
+      }).then(function () {
+        loading.remove();
+        canvas.focus();
+      }).catch(function (message) {
+        loading.textContent = "실행할 수 없습니다: " + message;
+      });
+
+      // Frame counter for checking performance on an actual Chromebook: ?fps in the URL, or
+      // Shift+F (on itch.io the page sits in an iframe, so the URL can't carry ?fps).
+      var fpsEl = document.querySelector("#fps"), fpsOn = false, frames = 0, last = 0;
+      function fpsTick(now) {
+        if (!fpsOn) return;
+        frames++;
+        if (now - last >= 1000) {
+          fpsEl.textContent = Math.round(frames * 1000 / (now - last)) + " fps";
+          frames = 0; last = now;
+        }
+        requestAnimationFrame(fpsTick);
+      }
+      function toggleFps() {
+        fpsOn = !fpsOn;
+        fpsEl.style.display = fpsOn ? "block" : "none";
+        if (fpsOn) { frames = 0; last = performance.now(); fpsEl.textContent = "… fps"; requestAnimationFrame(fpsTick); }
+      }
+      window.addEventListener("keydown", function (e) { if (e.shiftKey && e.code === "KeyF") toggleFps(); });
+      if (new URLSearchParams(location.search).has("fps")) toggleFps();
+    </script>
+  </body>
+</html>

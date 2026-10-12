@@ -1,0 +1,52 @@
+{
+  "games": [
+    {
+      "slug": "prismix",
+      "title": "Prismix",
+      "tagline": "RGB 채널 스킬을 합성하며 버티는 탑다운 로그라이트",
+      "description": "빨강·초록·파랑 원색 스킬을 모으고, 레벨업 때 프리즘에서 두 스킬을 합성해 새로운 색을 만듭니다. 몰려오는 색 적에게는 보색 스킬이 강하고, 같은 계열 색은 약합니다.\n\n한 판이 끝나면 모은 스크랩으로 영구 강화를 사고, 더 긴 등급에 도전하세요.",
+      "status": "개발 중",
+      "platforms": [
+        "PC",
+        "모바일"
+      ],
+      "controls": [
+        [
+          "이동",
+          "WASD / 방향키 · 휴대폰은 화면을 누른 채 드래그"
+        ],
+        [
+          "레벨업",
+          "카드 선택 · TAB 프리즘 열기 · SPACE 건너뛰고 회복"
+        ],
+        [
+          "분리 (프리즘)",
+          "X · 휴대폰은 혼합 스킬 하나를 고르고 '분리'"
+        ],
+        [
+          "일시정지",
+          "ESC · 오른쪽 위 II 버튼"
+        ],
+        [
+          "출격",
+          "ENTER · 메인 메뉴의 출격 버튼"
+        ]
+      ],
+      "cover": "games/prismix/cover.png",
+      "screenshots": [
+        "games/prismix/screenshot-1-menu.jpg",
+        "games/prismix/screenshot-2-run.jpg",
+        "games/prismix/screenshot-3-final-rush.jpg"
+      ],
+      "versions": [
+        {
+          "id": "2026-10-12-mobile",
+          "label": "0.1.1 휴대폰 화면 테스트판",
+          "date": "2026-10-12",
+          "temporary": true,
+          "notes": "휴대폰 가로 화면용 메뉴·조이스틱, 작은 화면에서 커지는 UI"
+        }
+      ]
+    }
+  ]
+}
