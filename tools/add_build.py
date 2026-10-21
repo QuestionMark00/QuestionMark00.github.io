@@ -1,7 +1,12 @@
 """Add (or remove) a playable WebGL build on the site.
 
 Add a version - copies the build into games/<slug>/<version-id>/ and lists it first (= newest)
-in games.json. A slug that isn't in games.json yet becomes a new game card:
+in games.json. A slug that isn't in games.json yet becomes a new game card.
+
+A non-temporary version goes to games/<slug>/play/ instead, and games.json's "play" names it.
+Unity's web player keys its save (PlayerPrefs in IndexedDB) off the build folder's URL, so a
+fixed folder for the newest proper version is what lets web progress carry over to the next
+one. The version that held play/ before moves out to its own games/<slug>/<id>/ folder:
 
     python tools/add_build.py prismix path/to/WebGLBuild --id 2026-10-20 --label "0.2 테스트판" \
         --notes "새 스테이지" --temporary
@@ -26,6 +31,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(ROOT, "games.json")
+PLAY = "play"  # folder name of the stable URL; never a version id
 FILE_LIMIT = 100 * 1024 * 1024
 SITE_WARN = 900 * 1024 * 1024
 
@@ -72,7 +78,12 @@ def main():
         if game is None:
             sys.exit(f"no game '{args.slug}' in games.json")
         game["versions"] = [v for v in game.get("versions", []) if v["id"] != args.remove]
-        target = os.path.join(ROOT, "games", args.slug, args.remove)
+        folder = args.remove
+        if game.get("play") == args.remove:
+            folder = PLAY
+            del game["play"]
+            print(f"note: {args.remove} was on {PLAY}/ - the next proper version you add takes it")
+        target = os.path.join(ROOT, "games", args.slug, folder)
         if os.path.isdir(target):
             shutil.rmtree(target)
         save(data)
@@ -83,6 +94,8 @@ def main():
         sys.exit("adding a version needs: build folder, --id and --label")
     if not all(c.isalnum() or c in ".-_" for c in args.id):
         sys.exit("--id may only use letters, digits, '.', '-' and '_' (it becomes part of the URL)")
+    if args.id == PLAY:
+        sys.exit(f"--id '{PLAY}' is the stable URL's folder - pick another id")
     build = os.path.abspath(args.build)
     if not os.path.isfile(os.path.join(build, "index.html")) or not os.path.isdir(os.path.join(build, "Build")):
         sys.exit(f"{build} doesn't look like a WebGL build (needs index.html and Build/)")
@@ -99,11 +112,31 @@ def main():
         games.append(game)
         print("new game card added - fill in description, controls, cover and platforms in games.json")
 
-    target = os.path.join(ROOT, "games", args.slug, args.id)
-    if os.path.exists(target):
-        if not args.replace:
-            sys.exit(f"{target} already exists - pick another --id or pass --replace")
-        shutil.rmtree(target)
+    game_dir = os.path.join(ROOT, "games", args.slug)
+    own = os.path.join(game_dir, args.id)
+    play = os.path.join(game_dir, PLAY)
+    already = os.path.exists(own) or (game.get("play") == args.id and os.path.exists(play))
+    if already and not args.replace:
+        sys.exit(f"{args.slug}/{args.id} already exists - pick another --id or pass --replace")
+
+    if args.temporary:
+        if game.get("play") == args.id:  # a proper version re-added as temporary leaves play/
+            shutil.rmtree(play, ignore_errors=True)
+            del game["play"]
+        target = own
+    else:
+        old = game.get("play")
+        if old and old != args.id and os.path.isdir(play):
+            moved = os.path.join(game_dir, old)
+            if os.path.exists(moved):
+                sys.exit(f"can't move {PLAY}/ out to {old}/ - that folder already exists")
+            shutil.move(play, moved)
+            print(f"moved {old} from {PLAY}/ to {old}/")
+        game["play"] = args.id
+        target = play
+    for stale in (own, play) if target == play else (own,):
+        if os.path.exists(stale):
+            shutil.rmtree(stale)
     shutil.copytree(build, target)
 
     versions = [v for v in game.get("versions", []) if v["id"] != args.id]
@@ -112,7 +145,8 @@ def main():
     save(data)
 
     total = folder_size(os.path.join(ROOT, "games"))
-    print(f"added {args.slug}/{args.id} ({folder_size(target) / 1048576:.1f} MB); games/ is now {total / 1048576:.0f} MB")
+    where = f"{args.slug}/{PLAY}/" if target == play else f"{args.slug}/{args.id}/"
+    print(f"added {args.id} at {where} ({folder_size(target) / 1048576:.1f} MB); games/ is now {total / 1048576:.0f} MB")
     if total > SITE_WARN:
         print("warning: close to GitHub Pages' 1 GB limit - remove old temporary versions with --remove")
 

@@ -10,7 +10,8 @@ GitHub Pages로 배포되며, 빌드 도구나 외부 서비스 없이 정적 �
 | `index.html` | 게임 목록 (`games.json`을 읽어서 그림) |
 | `game.html?g=<slug>` | 게임별 소개 · 조작 · 버전 목록 |
 | `games.json` | 게임과 버전 정보 전부. 버전은 최신순, 첫 번째가 "최신" |
-| `games/<slug>/<버전 id>/` | Unity WebGL 빌드 그대로 (`index.html` + `Build/`) |
+| `games/<slug>/play/` | 최신 정식 버전 (고정 주소 - 웹 저장이 다음 버전으로 이어짐) |
+| `games/<slug>/<버전 id>/` | 그 밖의 버전, Unity WebGL 빌드 그대로 (`index.html` + `Build/`) |
 | `games/<slug>/cover.png` 등 | 표지 · 스크린샷 |
 | `tools/add_build.py` | 빌드 추가/삭제 + `games.json` 갱신 |
 
@@ -22,6 +23,10 @@ git add -A && git commit -m "Add Prismix 0.2 test build" && git push
 ```
 
 - `--temporary`를 붙이면 "임시 버전" 표시가 붙습니다. 정식 버전이면 빼세요.
+- 정식 버전은 `games/<slug>/play/`에 들어가고, `games.json`의 `"play"`가 그 버전을 가리킵니다. 전에 `play/`에
+  있던 버전은 자기 `games/<slug>/<id>/` 폴더로 옮겨집니다. Unity 웹 빌드는 저장(PlayerPrefs)을 빌드 폴더
+  주소마다 따로 두므로, 최신 정식 버전을 늘 같은 주소에 두어야 웹 진행이 다음 버전으로 이어집니다.
+  임시 버전은 자기 폴더에 들어가고 `play/`는 그대로입니다.
 - 새 게임은 같은 명령에 `--title "제목" --tagline "한 줄 소개"`를 더하면 카드가 생깁니다.
   그다음 `games.json`에서 설명 · 조작 · 표지 · 플랫폼을 채웁니다.
 - 오래된 임시 버전 정리: `python tools/add_build.py prismix --remove 2026-10-20`

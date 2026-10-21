@@ -18,8 +18,10 @@
     return node;
   }
 
+  // The newest proper version lives at a fixed games/<slug>/play/ (games.json "play"): the web
+  // player keeps its save per build folder URL, so a fixed folder carries progress to the next one.
   function playUrl(game, version) {
-    return "games/" + game.slug + "/" + version.id + "/";
+    return "games/" + game.slug + "/" + (version.id === game.play ? "play" : version.id) + "/";
   }
 
   function tags(game, version) {
@@ -102,6 +104,7 @@
     });
     root.appendChild(list);
     root.appendChild(el("p", { class: "note", text: "임시 버전은 개발 중인 빌드라 버그가 있거나 저장 데이터가 초기화될 수 있습니다." }));
+    if (game.play) root.appendChild(el("p", { class: "note", text: "진행 상황은 이 브라우저에 저장됩니다. 최신 정식 버전은 늘 같은 주소라 다음 버전에서도 이어지고, 목록의 이전 버전은 저장이 따로입니다." }));
 
     if (game.screenshots && game.screenshots.length) {
       root.appendChild(el("h3", { class: "block", text: "스크린샷" }));
