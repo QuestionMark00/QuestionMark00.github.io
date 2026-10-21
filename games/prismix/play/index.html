@@ -68,13 +68,13 @@
       createUnityInstance(canvas, {
         // -dpr: the C# side sizes the phone UI from CSS pixels (UiScaleApplier.MobileAutoScale).
         arguments: touch ? ["-mobile", "-dpr=" + renderDpr] : [],
-        dataUrl: "Build/578849a8c8468fe8ef92dfe8f1ebaa94.data.unityweb",
+        dataUrl: "Build/b50c84b80dbdce4d04c082bafdc16cdc.data.unityweb",
         frameworkUrl: "Build/376fcb81fa8b8def611e3c36a5f9f0bf.framework.js.unityweb",
         codeUrl: "Build/86c6a41cda438990218953f15381bf79.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "QuestionMark",
         productName: "Prismix",
-        productVersion: "0.4.1",
+        productVersion: "0.4.2",
         // Chromebook screens are often high-DPI on weak GPUs: render at CSS pixels, not device pixels.
         // Phones are ~390 CSS px tall, which would blur all text - render those at up to 2x.
         devicePixelRatio: renderDpr,
