@@ -42,7 +42,7 @@
     <div id="loading">불러오는 중… <span id="pct">0%</span><div id="bar"><div id="fill"></div></div></div>
     <div id="fps"></div>
     <div id="rotate"><div class="icon"></div><div>가로로 돌려 주세요<br><span style="opacity:.6">Rotate to landscape</span></div></div>
-    <script src="Build/3bbfc40c4b2dd7d1557ddab0542719f8.loader.js"></script>
+    <script src="Build/787586a5636c40a415f268b400ffbf26.loader.js"></script>
     <script>
       var canvas = document.querySelector("#unity-canvas");
       var loading = document.querySelector("#loading");
@@ -68,13 +68,13 @@
       createUnityInstance(canvas, {
         // -dpr: the C# side sizes the phone UI from CSS pixels (UiScaleApplier.MobileAutoScale).
         arguments: touch ? ["-mobile", "-dpr=" + renderDpr] : [],
-        dataUrl: "Build/b50c84b80dbdce4d04c082bafdc16cdc.data.unityweb",
-        frameworkUrl: "Build/376fcb81fa8b8def611e3c36a5f9f0bf.framework.js.unityweb",
-        codeUrl: "Build/86c6a41cda438990218953f15381bf79.wasm.unityweb",
+        dataUrl: "Build/aceecf11ae1a79d083ae1642ee4f48c6.data.unityweb",
+        frameworkUrl: "Build/8036ff122afdf580de46563ddc494c8d.framework.js.unityweb",
+        codeUrl: "Build/007f7a6d65ffac8392ff470f986ccdb7.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "QuestionMark",
         productName: "Prismix",
-        productVersion: "0.4.2",
+        productVersion: "0.4.3",
         // Chromebook screens are often high-DPI on weak GPUs: render at CSS pixels, not device pixels.
         // Phones are ~390 CSS px tall, which would blur all text - render those at up to 2x.
         devicePixelRatio: renderDpr,
