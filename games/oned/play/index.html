@@ -33,22 +33,24 @@
     <div id="loading">LOADING <span id="pct">0%</span><div id="bar"><div id="fill"></div></div></div>
     <div id="hint">키보드 전용 · 소리를 켜고 플레이하세요</div>
     <div id="fps"></div>
-    <script src="Build/7a7701f3d09685deb51b49334ccf4fdc.loader.js"></script>
+    <script src="Build/c693ba952fdd0a5f337ee1d2611b6365.loader.js"></script>
     <script>
       var canvas = document.querySelector("#unity-canvas");
       var loading = document.querySelector("#loading");
       var hint = document.querySelector("#hint");
 
       createUnityInstance(canvas, {
-        dataUrl: "Build/27281e8cba757be81e62dd7cd83ee6b9.data.unityweb",
+        dataUrl: "Build/682407029d10db2891a1b6adbaa90464.data.unityweb",
         frameworkUrl: "Build/cfadf747a06bb86bdc4a96195d431fbc.framework.js.unityweb",
-        codeUrl: "Build/8e5752d4aa7d4a1e8b4fe9269f7bfd58.wasm.unityweb",
+        codeUrl: "Build/8553a23810115c6617b1eb30ea48bc20.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "1D",
         productVersion: "1.0",
-        // High-DPI laptops on weak GPUs: render at CSS pixels, not device pixels.
-        devicePixelRatio: 1,
+        // Render at the screen's real pixel density (capped at 2x) so lines and text stay sharp on
+        // high-DPI / Windows 125-150% scaled displays. ?lowres renders at CSS pixels for weak GPUs.
+        devicePixelRatio: new URLSearchParams(location.search).has("lowres")
+          ? 1 : Math.min(window.devicePixelRatio || 1, 2),
       }, function (progress) {
         var p = Math.round(progress * 100) + "%";
         document.querySelector("#pct").textContent = p;
