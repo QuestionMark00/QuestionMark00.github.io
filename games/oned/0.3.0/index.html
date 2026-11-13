@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ONE / DIMENSION</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+      #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+      /* 16:9, as large as the window allows - the UI is laid out for 1920x1080. */
+      #unity-canvas {
+        width: min(100vw, calc(100vh * 16 / 9)); height: min(100vh, calc(100vw * 9 / 16));
+        display: block; background: #000; outline: none;
+      }
+      #loading {
+        position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(60vw, 360px);
+        font: 600 12px/1.4 ui-monospace, monospace; letter-spacing: .2em; color: #e8e8e8; text-align: center;
+      }
+      #bar { height: 2px; margin-top: 12px; background: #262626; overflow: hidden; }
+      #fill { height: 100%; width: 0; background: #fff; }
+      #hint {
+        position: fixed; left: 0; right: 0; bottom: 14px; text-align: center; pointer-events: none;
+        font: 500 12px/1.4 system-ui, sans-serif; color: #6e6e6e;
+      }
+      #fps {
+        position: fixed; top: 6px; left: 6px; padding: 2px 6px; display: none;
+        font: 600 12px/1.4 ui-monospace, monospace; color: #fff; background: rgba(0, 0, 0, .6);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"><canvas id="unity-canvas" tabindex="-1"></canvas></div>
+    <div id="loading">LOADING <span id="pct">0%</span><div id="bar"><div id="fill"></div></div></div>
+    <div id="hint">키보드 전용 · 소리를 켜고 플레이하세요</div>
+    <div id="fps"></div>
+    <script src="Build/ccf9529f41ad793770b9e27c3505c504.loader.js"></script>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var loading = document.querySelector("#loading");
+      var hint = document.querySelector("#hint");
+
+      createUnityInstance(canvas, {
+        dataUrl: "Build/9d7031112001a00a36a94bba4430a234.data.unityweb",
+        frameworkUrl: "Build/d14c73e6cec0358bdd4fba96dce172e4.framework.js.unityweb",
+        codeUrl: "Build/a473ef09317657033f827abe42511fbb.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "1D",
+        productVersion: "1.0",
+        // Render at the screen's real pixel density (capped at 2x) so lines and text stay sharp on
+        // high-DPI / Windows 125-150% scaled displays. ?lowres renders at CSS pixels for weak GPUs.
+        devicePixelRatio: new URLSearchParams(location.search).has("lowres")
+          ? 1 : Math.min(window.devicePixelRatio || 1, 2),
+      }, function (progress) {
+        var p = Math.round(progress * 100) + "%";
+        document.querySelector("#pct").textContent = p;
+        document.querySelector("#fill").style.width = p;
+      }).then(function () {
+        loading.remove();
+        canvas.focus();
+        setTimeout(function () { hint.remove(); }, 6000);
+      }).catch(function (message) {
+        loading.textContent = "실행할 수 없습니다: " + message;
+      });
+
+      // Clicking anywhere gives the game the keyboard back (the canvas loses focus to the page).
+      window.addEventListener("pointerdown", function () { canvas.focus(); });
+
+      // Frame counter: ?fps in the URL, or Shift+F.
+      var fpsEl = document.querySelector("#fps"), fpsOn = false, frames = 0, last = 0;
+      function fpsTick(now) {
+        if (!fpsOn) return;
+        frames++;
+        if (now - last >= 1000) {
+          fpsEl.textContent = Math.round(frames * 1000 / (now - last)) + " fps";
+          frames = 0; last = now;
+        }
+        requestAnimationFrame(fpsTick);
+      }
+      function toggleFps() {
+        fpsOn = !fpsOn;
+        fpsEl.style.display = fpsOn ? "block" : "none";
+        if (fpsOn) { frames = 0; last = performance.now(); fpsEl.textContent = "… fps"; requestAnimationFrame(fpsTick); }
+      }
+      window.addEventListener("keydown", function (e) { if (e.shiftKey && e.code === "KeyF") toggleFps(); });
+      if (new URLSearchParams(location.search).has("fps")) toggleFps();
+    </script>
+  </body>
+</html>

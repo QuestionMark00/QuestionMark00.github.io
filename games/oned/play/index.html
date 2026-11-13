@@ -6,6 +6,8 @@
     <title>ONE / DIMENSION</title>
     <style>
       html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+      /* touch: no double-tap zoom, scroll, text selection or tap flash - every tap is a strike */
+      html, body, canvas { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
       #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
       /* 16:9, as large as the window allows - the UI is laid out for 1920x1080. */
       #unity-canvas {
@@ -22,6 +24,11 @@
         position: fixed; left: 0; right: 0; bottom: 14px; text-align: center; pointer-events: none;
         font: 500 12px/1.4 system-ui, sans-serif; color: #6e6e6e;
       }
+      #rotate {
+        position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center;
+        font: 500 14px/1.6 system-ui, sans-serif; color: #e8e8e8; background: #000; pointer-events: none;
+      }
+      @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
       #fps {
         position: fixed; top: 6px; left: 6px; padding: 2px 6px; display: none;
         font: 600 12px/1.4 ui-monospace, monospace; color: #fff; background: rgba(0, 0, 0, .6);
@@ -31,18 +38,19 @@
   <body>
     <div id="stage"><canvas id="unity-canvas" tabindex="-1"></canvas></div>
     <div id="loading">LOADING <span id="pct">0%</span><div id="bar"><div id="fill"></div></div></div>
-    <div id="hint">키보드 전용 · 소리를 켜고 플레이하세요</div>
+    <div id="hint">키보드 A / D · 모바일은 화면 왼쪽 / 오른쪽 탭 · 소리를 켜고 플레이하세요</div>
+    <div id="rotate">화면을 가로로 돌려주세요</div>
     <div id="fps"></div>
-    <script src="Build/ccf9529f41ad793770b9e27c3505c504.loader.js"></script>
+    <script src="Build/2697bee32bfd7dc083bb194a14b4320c.loader.js"></script>
     <script>
       var canvas = document.querySelector("#unity-canvas");
       var loading = document.querySelector("#loading");
       var hint = document.querySelector("#hint");
 
       createUnityInstance(canvas, {
-        dataUrl: "Build/9d7031112001a00a36a94bba4430a234.data.unityweb",
+        dataUrl: "Build/4e57312c0b87b4ce117671e68742efc3.data.unityweb",
         frameworkUrl: "Build/d14c73e6cec0358bdd4fba96dce172e4.framework.js.unityweb",
-        codeUrl: "Build/a473ef09317657033f827abe42511fbb.wasm.unityweb",
+        codeUrl: "Build/a864d11aab431b66ca07914fbf766043.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "1D",
